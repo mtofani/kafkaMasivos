@@ -38,7 +38,7 @@ def convertir_a_gmt3(time_stamp):
 
 def verificar_tiempo_fila(cursor, umbral_minutos):
     # Query para obtener la información
-    query = "SELECT * FROM `vno-events` WHERE id = 546300;"
+    query = "SELECT * FROM `vno-events` order by time_stamp DESC LIMIT 1;"
     cursor.execute(query)
     row = cursor.fetchone()
 
