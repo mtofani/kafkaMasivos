@@ -2874,3 +2874,8 @@ INFO:root:Tiempo formateado: 0:02:23
 2024-01-23 14:50:05,706 - INFO - Diferencia de tiempo: 0:22:38
 2024-01-23 14:50:05,706 - INFO - Tiempo formateado: 2024-01-23 14:27:27-03:00
 2024-01-23 14:50:05,706 - INFO - Resultado: 1
+2024-01-23 14:55:07,643 - INFO - Respuesta de la base de datos: {'id': 546300, 'vno': 'IPLAN', 'vno_susc_id': '2020174, 2020173', 'cto_id': 1097986, 'device_ip': '172.30.77.89', 'device_interface': '1/1/8:10', 'time_stamp': datetime.datetime(2024, 1, 23, 14, 27, 27), 'alarm_id': 722445, 'event_status_id': 1, 'serial_alarm_id': '722445.172.30.77.89.1.1.8.10'}
+2024-01-23 14:55:07,643 - INFO - No se aplica conversión para serial_alarm_id: 722445.172.30.77.89.1.1.8.10
+2024-01-23 14:55:07,660 - INFO - Diferencia de tiempo: 0:27:40
+2024-01-23 14:55:07,660 - INFO - Tiempo formateado: 2024-01-23 14:27:27-03:00
+2024-01-23 14:55:07,660 - INFO - Resultado: 1
