@@ -7,10 +7,14 @@ import logging
 
 
 def cargar_configuracion():
-    config = configparser.ConfigParser()
-    config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
-    return config
+    # Construir la ruta completa del archivo de configuración
+    ruta_config = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.ini')
 
+    # Cargar la configuración desde el archivo
+    config = configparser.ConfigParser()
+    config.read(ruta_config)
+
+    return config
 
 def obtener_conexion():
     config = cargar_configuracion()["DB"]
@@ -88,10 +92,14 @@ def verificar_tiempo_fila(cursor, umbral_minutos):
         print(0)
 
 def main():
-    # Configurar el logging
+    # Configurar el logging y dir de proyecto
+    directorio_proyecto = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(directorio_proyecto)
+    
     config = cargar_configuracion()
     logfile = config["LOG"]["path"]
-
+  
+ 
     logging.basicConfig(filename=logfile,format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
     umbral_minutos = int(config["UMBRAL"]["umbral_minutos"])
 
@@ -105,6 +113,7 @@ def main():
         verificar_tiempo_fila(cursor, umbral_minutos)
 
     except Exception as e:
+        print(0)
         logging.error("Error en la aplicación: %s", str(e))
 
     finally:
