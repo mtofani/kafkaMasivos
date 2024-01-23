@@ -1,0 +1,110 @@
+
+import mysql.connector
+from datetime import datetime, timedelta, timezone
+import configparser
+import pytz
+import os
+import logging
+
+def cargar_configuracion():
+    config = configparser.ConfigParser()
+    config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
+    return config
+
+#def obtener_path_log():
+ #   log_config = cargar_configuracion()
+  #  return log_config.get('Log', 'path')
+
+def conectar_mysql():
+    config = cargar_configuracion()["DB"]
+    return mysql.connector.connect(
+        host=config["host"],
+        user=config["user"],
+        password=config["password"],
+        database=config["database"]
+    )
+
+def convertir_a_gmt3(time_stamp):
+    # Convertir a zona horaria UTC
+    time_stamp_utc = time_stamp.replace(tzinfo=pytz.UTC)
+    
+    # Convertir a zona horaria GMT-3
+    time_stamp_gmt3 = time_stamp_utc.astimezone(pytz.timezone("America/Argentina/Buenos_Aires"))
+    
+    return time_stamp_gmt3
+
+def verificar_tiempo_fila(cursor, umbral_minutos):
+    query = "SELECT * FROM `vno-events` ORDER BY time_stamp DESC LIMIT 1;"
+    cursor.execute(query)
+    row = cursor.fetchone()
+
+    if row:
+        # Log de la respuesta del row de la base
+        logging.info("Respuesta de la base de datos: %s", row)
+
+        # Asegurarse de que time_stamp sea un objeto datetime
+        if isinstance(row["time_stamp"], datetime):
+            # Convertir a GMT-3
+            time_stamp_gmt3 = convertir_a_gmt3(row["time_stamp"])
+            logging.info("Hora en GMT-3: %s", time_stamp_gmt3)
+        else:
+            # La información de zona horaria no está configurada, asumimos que está en UTC y convertimos a GMT-3
+            time_stamp_gmt3 = convertir_a_gmt3(datetime.strptime(row["time_stamp"], "%Y-%m-%d %H:%M:%S"))
+            logging.info("Hora en GMT-3: %s", time_stamp_gmt3)
+
+        # Obtener la hora actual en la zona horaria GMT-3
+        ahora_gmt3 = datetime.now(pytz.timezone("America/Argentina/Buenos_Aires"))
+
+        # Calcular la diferencia de tiempo con respecto a time_stamp_gmt3
+        diferencia_tiempo = ahora_gmt3 - time_stamp_gmt3
+
+        # Log de la diferencia calculada
+        logging.info("Diferencia de tiempo: %s", diferencia_tiempo)
+
+        # Extraer la parte de tiempo de la diferencia
+        tiempo_formateado = str(diferencia_tiempo).split(".")[0]
+        logging.info("Tiempo formateado: %s", tiempo_formateado)
+
+        # Comparar la diferencia en minutos
+        if diferencia_tiempo.total_seconds() > (umbral_minutos * 60):
+            #logging.info("Resultado: 0")
+            print(0)
+        else:
+            #logging.info("Resultado: 1")
+            print(1)
+    else:
+        logging.warning("No se encontraron filas en la tabla.")
+        print(0)
+
+def main():
+    # Configurar el logging
+
+     # Obtener el path del log desde el archivo de configuración
+    #path_log = obtener_path_log()
+
+    # Configurar el logging con el path obtenido
+    config = cargar_configuracion()
+
+    logfile = config["LOG"]["path"]
+    
+  
+    logging.basicConfig(filename=logfile, level=logging.INFO)
+    umbral_minutos = int(config["UMBRAL"]["umbral_minutos"])
+
+    try:
+        connection = conectar_mysql()
+        cursor = connection.cursor(dictionary=True)
+
+        verificar_tiempo_fila(cursor, umbral_minutos)
+
+        cursor.close()
+        connection.close()
+
+    except mysql.connector.Error as err:
+        # Log del error de MySQL
+        print(0)
+        logging.error("Error de MySQL: %s", err)
+
+if __name__ == "__main__":
+    main()
+
